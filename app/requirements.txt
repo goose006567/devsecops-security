@@ -1,0 +1,3 @@
+# DEMO: a pinned older package with known CVEs (legacy dependency)
+Flask==0.12.2
+requests==2.19.1

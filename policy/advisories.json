@@ -1,0 +1,10 @@
+{
+  "py": [
+    {"name": "flask", "op": "==", "version": "0.12.2", "cve": "CVE-2018-1000656",
+     "severity": "high", "summary": "Flask <1.0.2 vulnerable to open redirect / DoS"},
+    {"name": "requests", "op": "==", "version": "2.19.1", "cve": "CVE-2018-18074",
+     "severity": "medium", "summary": "requests <=2.19.1 Session fixation"},
+    {"name": "requests", "op": "<", "version": "2.20.0", "cve": "CVE-2018-18074",
+     "severity": "medium", "summary": "requests <2.20.0 Session fixation"}
+  ]
+}

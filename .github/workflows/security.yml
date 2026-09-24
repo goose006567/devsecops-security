@@ -1,0 +1,58 @@
+name: DevSecOps
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  sast:
+    name: SAST — Bandit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install bandit
+      - name: Run Bandit
+        run: bandit -r app/ -f json -o bandit-report.json
+      - uses: actions/upload-artifact@v4
+        with: { name: bandit-report, path: bandit-report.json }
+
+  secrets:
+    name: Secret detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Offline regex scanner (no deps)
+        run: python3 scripts/secrets_scanner.py .
+
+  deps:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pip-audit
+      - name: pip-audit
+        run: pip-audit -r app/requirements.txt
+      - name: Policy audit (offline advisory DB)
+        run: python3 scripts/dependency_audit.py
+
+  iac:
+    name: IaC security — Checkov
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install checkov
+      - name: Checkov scan (SARIF)
+        run: checkov -d iac --soft-fail --output cli,sarif --output-file-path console,checkov.sarif
+      - uses: actions/upload-artifact@v4
+        with: { name: checkov-sarif, path: checkov.sarif }
